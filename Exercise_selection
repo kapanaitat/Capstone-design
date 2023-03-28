@@ -1,0 +1,22 @@
+#exercise selection service
+
+import rospy
+from ai_trainer.srv import ExerciseSelection
+
+class ExerciseSelectionService:
+    def __init__(self):
+        rospy.Service('exercise_selection', ExerciseSelection, self.handle_request)
+
+    def handle_request(self, request):
+        if request.exercise == 'push_up':
+            return 'Perform push-ups with your hands shoulder-width apart and your body in a straight line.'
+        elif request.exercise == 'squats':
+            return 'Perform squats with your feet shoulder-width apart and your knees tracking over your toes.'
+        else:
+            return 'Invalid exercise selection.'
+
+if __name__ == '__main__':
+    rospy.init_node('exercise_selection_service')
+    service = ExerciseSelectionService()
+    rospy.spin()
+
