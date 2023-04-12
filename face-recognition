@@ -1,0 +1,58 @@
+import cv2
+import numpy as np
+
+# Load pre-trained face detection model
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+# Load pre-trained face recognition model
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+recognizer.read('face_recognition_model.xml')
+
+# Initialize video capture device
+cap = cv2.VideoCapture(0)
+
+# Define font and colors for displaying recognized face label
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 1
+thickness = 2
+color = (0, 255, 0)
+
+# Define recognized faces and their labels
+faces = ['person1', 'person2', 'person3']
+labels = [0, 1, 2]
+
+# Start video capture and face recognition loop
+while True:
+    # Read a frame from the video capture device
+    ret, frame = cap.read()
+    
+    # Convert the frame to grayscale for face detection
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    # Detect faces in the grayscale frame using the face detection model
+    faces_rect = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    
+    # For each detected face, predict the label using the face recognition model
+    for (x, y, w, h) in faces_rect:
+        face_roi_gray = gray[y:y+h, x:x+w]
+        face_roi_gray_resized = cv2.resize(face_roi_gray, (100, 100))
+        label, confidence = recognizer.predict(face_roi_gray_resized)
+        
+        # Display the recognized face label on the frame
+        if confidence < 100:
+            text = faces[label]
+            cv2.putText(frame, text, (x, y-20), font, font_scale, color, thickness, cv2.LINE_AA)
+        
+        # Draw a rectangle around the detected face
+        cv2.rectangle(frame, (x, y), (x+w, y+h), color, thickness)
+    
+    # Display the frame with the detected faces and recognized labels
+    cv2.imshow('Face Recognition', frame)
+    
+    # Exit the loop on 'q' key press
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+# Release the video capture device and close all windows
+cap.release()
+cv2.destroyAllWindows()
